@@ -184,14 +184,14 @@
     amountInput.addEventListener('input', drawStandee);
 
     function getDigits() {
-      return upiInput.value.replace(/\D/g, '').slice(0, 9) || '000000000';
+      return upiInput.value.replace(/\D/g, '').slice(0, 9) || '0000000000';
     }
 
     function getVpa() {
       if (currentMode === 'standee') {
         return `Q${getDigits()}@ybl`;
       } else {
-        return upiInput.value.trim() || 'example@upi';
+        return upiInput.value.trim() || 'suhan@upi';
       }
     }
 
