@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UPI Studio - Standee & Custom UPI QR Generator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- QRCode.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Google Fonts for Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .phpe-gradient { background: linear-gradient(135deg, #5f259f 0%, #391163 100%); }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 md:p-8">
+
+  <!-- Header Banner -->
+  <header class="text-center my-2 w-full max-w-5xl phpe-gradient py-5 px-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
+    <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#5f259f] font-extrabold text-xl shadow">
+          <span>SM</span>
+        </div>
+        <div class="text-left">
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">UPI Studio</h1>
+          <p class="text-purple-200 text-xs md:text-sm font-medium">Merchant Standee & Custom UPI Generator</p>
+        </div>
+      </div>
+      <div class="text-xs text-purple-200 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
+        By SUHAN
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Generator Card -->
+  <main class="max-w-5xl w-full bg-white rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-12 border border-slate-200/80 my-auto">
+    
+    <!-- Left Panel: Controls & Input Form -->
+    <div class="md:col-span-6 p-6 md:p-8 space-y-6">
+      
+      <!-- Mode Toggle Switcher -->
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Select Generator Mode</label>
+        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+          <button type="button" id="modeStandeeBtn" 
+            class="py-2.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 bg-[#5f259f] text-white shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            UPI Studio Standee
+          </button>
+          <button type="button" id="modeGenericBtn" 
+            class="py-2.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Normal UPI QR
+          </button>
+        </div>
+      </div>
+
+      <form id="qrForm" class="space-y-4" onsubmit="return false;">
+        <!-- Merchant / Payee Name -->
+        <div>
+          <label for="merchantName" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+            Merchant / Payee Name <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="merchantName" value="" placeholder="e.g. Suhan Traders" required
+            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#5f259f] outline-none transition bg-slate-50/50 focus:bg-white" />
+        </div>
+
+        <!-- Dynamic Input: Terminal Digits -->
+        <div>
+          <label id="upiFieldLabel" for="upiInput" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+            Terminal Digits (9 Digits) <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="upiInput" value="" maxlength="9" placeholder="e.g. 9133359954@AXL" required
+            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#5f259f] outline-none transition bg-slate-50/50 focus:bg-white font-mono" />
+          <p class="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+            <span>Payload VPA:</span>
+            <span id="vpaPreview" class="font-mono text-[#5f259f] font-semibold bg-purple-50 px-2 py-0.5 rounded border border-purple-100">-</span>
+          </p>
+        </div>
+
+        <!-- Fixed Amount (Optional) -->
+        <div>
+          <label for="amount" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+            Fixed Amount (₹) <span class="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <input type="number" id="amount" step="0.01" min="1" placeholder="Leave blank for dynamic input"
+            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#5f259f] outline-none transition bg-slate-50/50 focus:bg-white" />
+        </div>
+
+        <!-- Hidden Container for raw QR rendering -->
+        <div id="rawQrWrapper" class="hidden"></div>
+
+        <!-- Generate Button -->
+        <button type="button" id="renderBtn"
+          class="w-full bg-[#5f259f] hover:bg-[#4b1c80] text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition duration-200 active:scale-[0.99] flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          Generate QR Standee
+        </button>
+      </form>
+    </div>
+
+    <!-- Right Panel: Real-time Canvas Display -->
+    <div class="md:col-span-6 bg-slate-50 p-6 md:p-8 flex flex-col items-center justify-center border-t md:border-t-0 md:border-l border-slate-200">
+      
+      <!-- Canvas Card Wrapper -->
+      <div class="bg-white p-3 rounded-2xl shadow-2xl border border-slate-200/80 flex flex-col items-center justify-center relative">
+        <canvas id="standeeCanvas" width="800" height="1080" class="w-72 h-[388px] rounded-xl border border-slate-100 shadow-sm"></canvas>
+      </div>
+
+      <!-- Download Button -->
+      <button id="downloadBtn"
+        class="mt-6 w-full max-w-xs bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition duration-200 flex items-center justify-center gap-2 active:scale-[0.99]">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+          <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/>
+        </svg>
+        Download High-Res PNG
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Copyright Footer -->
+  <footer class="text-center my-4 text-xs font-medium text-slate-400">
+    &copy; All rights reserved by SMGC PVT LTD
+  </footer>
+
+  <!-- Script Logic -->
+  <script>
+    let currentMode = 'standee';
+
+    const modeStandeeBtn = document.getElementById('modeStandeeBtn');
+    const modeGenericBtn = document.getElementById('modeGenericBtn');
+    const merchantNameInput = document.getElementById('merchantName');
+    const upiInput = document.getElementById('upiInput');
+    const upiFieldLabel = document.getElementById('upiFieldLabel');
+    const amountInput = document.getElementById('amount');
+    const vpaPreview = document.getElementById('vpaPreview');
+    
+    const renderBtn = document.getElementById('renderBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const rawQrWrapper = document.getElementById('rawQrWrapper');
+    const canvas = document.getElementById('standeeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const SCALE = 2;
+
+    modeStandeeBtn.addEventListener('click', () => setMode('standee'));
+    modeGenericBtn.addEventListener('click', () => setMode('generic'));
+
+    function setMode(mode) {
+      currentMode = mode;
+      upiInput.value = "";
+      if (mode === 'standee') {
+        modeStandeeBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 bg-[#5f259f] text-white shadow-sm";
+        modeGenericBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900";
+        upiFieldLabel.innerHTML = 'Terminal Digits (9 Digits) <span class="text-red-500">*</span>';
+        upiInput.placeholder = "e.g. 9133359954@AXL";
+        upiInput.setAttribute('maxlength', '9');
+      } else {
+        modeGenericBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 bg-[#5f259f] text-white shadow-sm";
+        modeStandeeBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900";
+        upiFieldLabel.innerHTML = 'UPI ID / VPA <span class="text-red-500">*</span>';
+        upiInput.placeholder = "e.g. 9133359954@AXL";
+        upiInput.removeAttribute('maxlength');
+      }
+      updateVpaPreview();
+      drawStandee();
+    }
+
+    upiInput.addEventListener('input', function() {
+      if (currentMode === 'standee') {
+        this.value = this.value.replace(/\D/g, '').slice(0, 9);
+      }
+      updateVpaPreview();
+    });
+
+    merchantNameInput.addEventListener('input', drawStandee);
+    amountInput.addEventListener('input', drawStandee);
+
+    function getDigits() {
+      return upiInput.value.replace(/\D/g, '').slice(0, 9) || '000000000';
+    }
+
+    function getVpa() {
+      if (currentMode === 'standee') {
+        return `Q${getDigits()}@ybl`;
+      } else {
+        return upiInput.value.trim() || 'example@upi';
+      }
+    }
+
+    function updateVpaPreview() {
+      vpaPreview.textContent = getVpa();
+    }
+
+    function drawRoundedRect(ctx, x, y, width, height, radius) {
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, width, height, radius);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + width, y, x + width, y + height, radius);
+        ctx.arcTo(x + width, y + height, x, y + height, radius);
+        ctx.arcTo(x, y + height, x, y, radius);
+        ctx.arcTo(x, y, x + width, y, radius);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    function generateQrCode(text) {
+      return new Promise((resolve) => {
+        rawQrWrapper.innerHTML = '';
+        new QRCode(rawQrWrapper, {
+          text: text,
+          width: 560,
+          height: 560,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+
+        const checkCanvas = setInterval(() => {
+          const qrCanvas = rawQrWrapper.querySelector('canvas');
+          if (qrCanvas) {
+            clearInterval(checkCanvas);
+            resolve(qrCanvas);
+          }
+        }, 20);
+      });
+    }
+
+    async function drawStandee() {
+      const merchant = merchantNameInput.value.trim() || 'Merchant Name';
+      const vpa = getVpa();
+      const amount = amountInput.value.trim();
+
+      let upiUri = `upi://pay?pa=${vpa}` +
+                   `&pn=${encodeURIComponent(merchant)}` +
+                   `&mc=0000` +
+                   `&mode=02` +
+                   `&purpose=00` +
+                   `&cu=INR`;
+
+      if (amount) {
+        upiUri += `&am=${encodeURIComponent(amount)}`;
+      }
+
+      const qrSourceCanvas = await generateQrCode(upiUri);
+
+      // Reset Context & Clear Background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (currentMode === 'standee') {
+        // --- UPI Studio Standee Layout ---
+        
+        // Header Logo Circle
+        ctx.fillStyle = "#5f259f";
+        ctx.beginPath();
+        ctx.arc(200 * SCALE, 48 * SCALE, 26 * SCALE, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // White "SM" character inside canvas header logo
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `800 ${22 * SCALE}px 'Inter', sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("SM", 200 * SCALE, 48 * SCALE);
+
+        // Brand Text
+        ctx.fillStyle = "#5f259f";
+        ctx.font = `800 ${28 * SCALE}px 'Inter', sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("UPI Studio", 200 * SCALE, 100 * SCALE);
+
+        // Orange Merchant Pill Box
+        ctx.font = `bold ${15 * SCALE}px 'Inter', sans-serif`;
+        const textWidth = ctx.measureText(merchant).width;
+        const pillWidth = Math.max(180 * SCALE, Math.min(340 * SCALE, textWidth + (36 * SCALE)));
+        const pillHeight = 36 * SCALE;
+        const pillX = (canvas.width - pillWidth) / 2;
+        const pillY = 114 * SCALE;
+
+        ctx.fillStyle = "#eb7c28";
+        drawRoundedRect(ctx, pillX, pillY, pillWidth, pillHeight, 18 * SCALE);
+
+        // Merchant Name Text
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(merchant, 200 * SCALE, pillY + (18 * SCALE));
+
+        // QR Code Matrix
+        ctx.drawImage(qrSourceCanvas, 60 * SCALE, 168 * SCALE, 280 * SCALE, 280 * SCALE);
+
+        // Footer BHIM UPI Branding
+        ctx.fillStyle = "#1e293b";
+        ctx.font = `800 ${16 * SCALE}px 'Inter', sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("BHIM  |  UPI", 200 * SCALE, 478 * SCALE);
+
+        ctx.fillStyle = "#64748b";
+        ctx.font = `500 ${9 * SCALE}px 'Inter', sans-serif`;
+        ctx.fillText("BHARAT INTERFACE FOR MONEY     UNIFIED PAYMENTS INTERFACE", 200 * SCALE, 492 * SCALE);
+
+        // Terminal Number Label
+        const digits = getDigits();
+        ctx.fillStyle = "#0f172a";
+        ctx.font = `700 ${12 * SCALE}px 'Inter', sans-serif`;
+        ctx.fillText(`Terminal 1-Q${digits}`, 200 * SCALE, 516 * SCALE);
+
+      } else {
+        // --- Generic Clean UPI Card Layout ---
+        
+        // Banner Background
+        ctx.fillStyle = "#5f259f";
+        ctx.fillRect(0, 0, canvas.width, 90 * SCALE);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `800 ${22 * SCALE}px 'Inter', sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("SCAN & PAY WITH ANY UPI APP", 200 * SCALE, 42 * SCALE);
+
+        ctx.font = `500 ${12 * SCALE}px 'Inter', sans-serif`;
+        ctx.fillStyle = "#e9d5ff";
+        ctx.fillText("GPay • PhonePe • Paytm • BHIM", 200 * SCALE, 64 * SCALE);
+
+        // Merchant Name
+        ctx.fillStyle = "#0f172a";
+        ctx.font = `800 ${20 * SCALE}px 'Inter', sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText(merchant, 200 * SCALE, 130 * SCALE);
+
+        // VPA Subtitle
+        ctx.fillStyle = "#5f259f";
+        ctx.font = `600 ${13 * SCALE}px 'Inter', sans-serif`;
+        ctx.fillText(vpa, 200 * SCALE, 150 * SCALE);
+
+        // QR Code Matrix
+        ctx.drawImage(qrSourceCanvas, 60 * SCALE, 172 * SCALE, 280 * SCALE, 280 * SCALE);
+
+        // Footer
+        ctx.fillStyle = "#1e293b";
+        ctx.font = `800 ${16 * SCALE}px 'Inter', sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText("BHIM  |  UPI", 200 * SCALE, 485 * SCALE);
+
+        ctx.fillStyle = "#64748b";
+        ctx.font = `500 ${9 * SCALE}px 'Inter', sans-serif`;
+        ctx.fillText("ACCEPT PAYMENTS FROM ALL UPI APPS", 200 * SCALE, 502 * SCALE);
+      }
+    }
+
+    // Initial Font Load Trigger
+    window.addEventListener('load', () => {
+      document.fonts.ready.then(() => {
+        drawStandee();
+      });
+    });
+
+    renderBtn.addEventListener('click', drawStandee);
+
+    downloadBtn.addEventListener('click', function() {
+      const link = document.createElement('a');
+      const sanitizedName = merchantNameInput.value.trim().replace(/\s+/g, '_') || 'Merchant';
+      link.href = canvas.toDataURL("image/png");
+      link.download = `UPI-Studio-QR-${sanitizedName}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  </script>
+</body>
+</html>
