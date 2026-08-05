@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UPI Studio - Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+  <div class="w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+    <header class="phpe-gradient bg-gradient-to-r from-[#5f259f] to-[#391163] text-white p-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold">Calculator</h1>
+          <p class="text-sm text-purple-200 mt-1">Basic math operations for quick results</p>
+        </div>
+        <a href="index.html" class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold text-white hover:bg-white/20 transition">
+          Back to Studio
+        </a>
+      </div>
+    </header>
+
+    <main class="p-6 space-y-6">
+      <div class="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs uppercase tracking-widest text-slate-500">Calculator</span>
+          <span id="operationLabel" class="text-xs font-semibold text-slate-600">Ready</span>
+        </div>
+        <div id="subDisplay" class="text-right text-sm text-slate-500 min-h-[1.25rem] mb-2"></div>
+        <div id="display" class="min-h-[5rem] rounded-3xl bg-slate-900 text-right text-4xl font-extrabold text-white p-4 break-words">0</div>
+      </div>
+
+      <div class="grid grid-cols-4 gap-3">
+        <button class="calc-btn rounded-3xl bg-slate-200 text-slate-800 py-4 text-xl font-semibold" data-action="clear">C</button>
+        <button class="calc-btn rounded-3xl bg-slate-200 text-slate-800 py-4 text-xl font-semibold" data-action="toggle-sign">+/-</button>
+        <button class="calc-btn rounded-3xl bg-slate-200 text-slate-800 py-4 text-xl font-semibold" data-action="percent">%</button>
+        <button class="calc-btn rounded-3xl bg-amber-500 text-slate-900 py-4 text-xl font-semibold" data-action="divide">÷</button>
+
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="7">7</button>
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="8">8</button>
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="9">9</button>
+        <button class="calc-btn rounded-3xl bg-amber-500 text-slate-900 py-4 text-xl font-semibold" data-action="multiply">×</button>
+
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="4">4</button>
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="5">5</button>
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="6">6</button>
+        <button class="calc-btn rounded-3xl bg-amber-500 text-slate-900 py-4 text-xl font-semibold" data-action="subtract">−</button>
+
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="1">1</button>
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="2">2</button>
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="3">3</button>
+        <button class="calc-btn rounded-3xl bg-emerald-600 text-white py-4 text-xl font-semibold" data-action="add">+</button>
+
+        <button class="calc-btn col-span-2 rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-digit="0">0</button>
+        <button class="calc-btn rounded-3xl bg-slate-100 text-slate-900 py-4 text-xl font-semibold" data-action="decimal">.</button>
+        <button class="calc-btn rounded-3xl bg-[#5f259f] text-white py-4 text-xl font-semibold" data-action="equals">=</button>
+      </div>
+      <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500 mt-4">
+        <p class="font-semibold text-slate-700">How % works</p>
+        <p class="mt-2">Enter a number, press <span class="font-semibold">%</span>, then enter the percentage value and press <span class="font-semibold">=</span>.</p>
+        <p class="mt-1">Example: <span class="font-semibold">1000 % 10 = 100</span></p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const subDisplay = document.getElementById('subDisplay');
+    const operationLabel = document.getElementById('operationLabel');
+    const buttons = document.querySelectorAll('.calc-btn');
+
+    let currentValue = '0';
+    let previousValue = null;
+    let operator = null;
+    let waitingForNewValue = false;
+
+    function updateDisplay() {
+      display.textContent = currentValue;
+    }
+
+    function setOperationLabel(text) {
+      operationLabel.textContent = text;
+    }
+
+    function inputDigit(digit) {
+      if (waitingForNewValue) {
+        currentValue = digit;
+        waitingForNewValue = false;
+      } else {
+        currentValue = currentValue === '0' ? digit : currentValue + digit;
+      }
+      updateDisplay();
+    }
+
+    function inputDecimal() {
+      if (waitingForNewValue) {
+        currentValue = '0.';
+        waitingForNewValue = false;
+      } else if (!currentValue.includes('.')) {
+        currentValue += '.';
+      }
+      updateDisplay();
+    }
+
+    function clearAll() {
+      currentValue = '0';
+      previousValue = null;
+      operator = null;
+      waitingForNewValue = false;
+      subDisplay.textContent = '';
+      setOperationLabel('Ready');
+      updateDisplay();
+    }
+
+    function toggleSign() {
+      if (currentValue !== '0') {
+        currentValue = currentValue.startsWith('-') ? currentValue.slice(1) : '-' + currentValue;
+        updateDisplay();
+      }
+    }
+
+    function inputPercent() {
+      const value = parseFloat(currentValue);
+
+      if (previousValue === null) {
+        previousValue = value;
+        operator = 'percent';
+        waitingForNewValue = true;
+        subDisplay.textContent = `${previousValue} %`;
+        setOperationLabel('Percent of');
+      } else if (operator === 'percent' && !waitingForNewValue) {
+        const percentValue = (previousValue * value) / 100;
+        currentValue = String(percentValue);
+        subDisplay.textContent = `${value}% of ${previousValue} = ${currentValue}`;
+        waitingForNewValue = true;
+        setOperationLabel('Percent Amount');
+      } else {
+        currentValue = String((previousValue * value) / 100);
+        subDisplay.textContent = `${value}% of ${previousValue} = ${currentValue}`;
+        waitingForNewValue = true;
+        setOperationLabel('Percent Amount');
+      }
+
+      updateDisplay();
+    }
+
+    function performOperation(nextOperator) {
+      const value = parseFloat(currentValue);
+
+      if (operator === 'percent' && previousValue !== null && !waitingForNewValue) {
+        const result = calculate(previousValue, value, operator);
+        currentValue = String(result);
+        previousValue = result;
+        updateDisplay();
+      } else if (previousValue === null) {
+        previousValue = value;
+      } else if (operator) {
+        const result = calculate(previousValue, value, operator);
+        currentValue = String(result);
+        previousValue = result;
+        updateDisplay();
+      }
+
+      waitingForNewValue = true;
+      operator = nextOperator;
+      subDisplay.textContent = `${previousValue} ${operator}`;
+      setOperationLabel(operator === 'add' ? 'Add'
+        : operator === 'subtract' ? 'Subtract'
+        : operator === 'multiply' ? 'Multiply'
+        : operator === 'divide' ? 'Divide'
+        : 'Operation');
+    }
+
+    function calculate(first, second, operator) {
+      switch (operator) {
+        case 'add':
+          return first + second;
+        case 'subtract':
+          return first - second;
+        case 'multiply':
+          return first * second;
+        case 'divide':
+          return second === 0 ? 0 : first / second;
+        case 'percent':
+          return (first * second) / 100;
+        default:
+          return second;
+      }
+    }
+
+    function computeResult() {
+      if (operator && previousValue !== null) {
+        const value = parseFloat(currentValue);
+        const result = calculate(previousValue, value, operator);
+        currentValue = String(result);
+        previousValue = null;
+        operator = null;
+        waitingForNewValue = true;
+        subDisplay.textContent = '';
+        setOperationLabel('Result');
+        updateDisplay();
+      }
+    }
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const digit = button.dataset.digit;
+        const action = button.dataset.action;
+
+        if (digit) {
+          inputDigit(digit);
+          return;
+        }
+
+        switch (action) {
+          case 'decimal':
+            inputDecimal();
+            break;
+          case 'clear':
+            clearAll();
+            break;
+          case 'toggle-sign':
+            toggleSign();
+            break;
+          case 'percent':
+            inputPercent();
+            break;
+          case 'add':
+          case 'subtract':
+          case 'multiply':
+          case 'divide':
+            performOperation(action);
+            break;
+          case 'equals':
+            computeResult();
+            break;
+        }
+      });
+    });
+
+    clearAll();
+  </script>
+</body>
+</html>

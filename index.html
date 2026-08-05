@@ -52,6 +52,10 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
           Weight Bill Calculator
         </button>
+        <button type="button" id="openCalcPageBtn" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition text-left">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8M8 12h8M8 17h8M6 6h12a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2z"></path></svg>
+          Calculator
+        </button>
       </nav>
     </div>
 
@@ -262,6 +266,7 @@
     const purchaseUnit = document.getElementById('purchaseUnit');
     const billResult = document.getElementById('billResult');
     const applyCalcToAmountBtn = document.getElementById('applyCalcToAmountBtn');
+    const openCalcPageBtn = document.getElementById('openCalcPageBtn');
 
     // Canvas & Render Elements
     const renderBtn = document.getElementById('renderBtn');
@@ -304,8 +309,13 @@
       calcModalOverlay.classList.add('hidden');
     }
 
+    function openCalcPage() {
+      window.location.href = 'calculator.html';
+    }
+
     openCalcModalBtn.addEventListener('click', openCalcModal);
     closeCalcModalBtn.addEventListener('click', closeCalcModal);
+    openCalcPageBtn.addEventListener('click', openCalcPage);
 
     // Close calculator modal on clicking dark backdrop
     calcModalOverlay.addEventListener('click', (e) => {
