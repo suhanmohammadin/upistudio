@@ -18,12 +18,114 @@
     .phpe-gradient { background: linear-gradient(135deg, #5f259f 0%, #391163 100%); }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 md:p-8">
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 md:p-8 relative overflow-x-hidden">
+
+  <!-- Side Navigation Drawer Backdrop -->
+  <div id="drawerOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
+  <!-- Side Navigation Drawer -->
+  <aside id="sideDrawer" class="fixed top-0 left-0 h-full w-80 bg-white z-50 shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
+    <div>
+      <!-- Drawer Header -->
+      <div class="phpe-gradient p-6 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#5f259f] font-extrabold text-lg">
+            <span>SM</span>
+          </div>
+          <div>
+            <h2 class="font-bold text-lg leading-none">UPI Studio</h2>
+            <p class="text-xs text-purple-200 mt-1">Merchant Utilities</p>
+          </div>
+        </div>
+        <button id="closeDrawerBtn" class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Drawer Links / Options -->
+      <nav class="p-4 space-y-1">
+        <button type="button" id="drawerHomeLink" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#5f259f] bg-purple-50 rounded-xl text-left">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          QR & Standee Studio
+        </button>
+        <button type="button" id="openCalcModalBtn" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition text-left">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+          Weight Bill Calculator
+        </button>
+      </nav>
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-4 border-t border-slate-100 text-xs text-slate-400 text-center">
+      SMGC PVT LTD • v2.2
+    </div>
+  </aside>
+
+  <!-- POPUP MODAL: Weight Bill Calculator -->
+  <div id="calcModalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      
+      <!-- Modal Header -->
+      <div class="phpe-gradient p-4 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+          <h3 class="font-bold text-base">Weight Bill Calculator</h3>
+        </div>
+        <button type="button" id="closeCalcModalBtn" class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold uppercase tracking-wider text-slate-600 block mb-1">1 KG Rate (₹)</label>
+            <input type="number" id="ratePerKg" placeholder="e.g. 1000" step="0.01"
+              class="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#5f259f] bg-slate-50 focus:bg-white font-mono" />
+          </div>
+          <div>
+            <label class="text-xs font-bold uppercase tracking-wider text-slate-600 block mb-1">Quantity Bought</label>
+            <div class="flex">
+              <input type="number" id="purchaseQty" placeholder="e.g. 500" step="0.01"
+                class="w-full px-3 py-2.5 border border-r-0 border-slate-300 rounded-l-xl text-sm outline-none focus:ring-2 focus:ring-[#5f259f] bg-slate-50 focus:bg-white font-mono" />
+              <select id="purchaseUnit" class="bg-slate-100 border border-slate-300 rounded-r-xl px-2 text-xs font-bold text-slate-700 outline-none">
+                <option value="g">Grams (g)</option>
+                <option value="kg">KG</option>
+                <option value="ml">ml</option>
+                <option value="l">Litre (L)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calculated Bill Box -->
+        <div class="flex items-center justify-between bg-purple-50 p-3.5 rounded-xl border border-purple-100">
+          <span class="text-xs font-bold text-slate-600">Calculated Bill:</span>
+          <span id="billResult" class="font-mono text-base font-extrabold text-[#5f259f]">₹ 0.00</span>
+        </div>
+
+        <!-- Apply Button -->
+        <button type="button" id="applyCalcToAmountBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition duration-200 active:scale-[0.99] flex items-center justify-center gap-2 text-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          Set as Fixed Amount in QR
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Header Banner -->
   <header class="text-center my-2 w-full max-w-5xl phpe-gradient py-5 px-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
     <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- Left side: Hamburger Toggle + Logo Brand -->
       <div class="flex items-center gap-3">
+        <!-- 3-Line Hamburger Toggle Button -->
+        <button type="button" id="openDrawerBtn" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition text-white" aria-label="Open Menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+
         <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#5f259f] font-extrabold text-xl shadow">
           <span>SM</span>
         </div>
@@ -32,8 +134,9 @@
           <p class="text-purple-200 text-xs md:text-sm font-medium">Merchant Standee & Custom UPI Generator</p>
         </div>
       </div>
+
       <div class="text-xs text-purple-200 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
-        What's next,Buddy ?
+        What's next, Buddy?
       </div>
     </div>
   </header>
@@ -76,7 +179,7 @@
           <label id="upiFieldLabel" for="upiInput" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
             Terminal Digits (9 Digits) <span class="text-red-500">*</span>
           </label>
-          <input type="text" id="upiInput" value="" maxlength="9" placeholder="e.g. 9133359954@AXL" required
+          <input type="text" id="upiInput" value="" maxlength="9" placeholder="e.g. 9133359954" required
             class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#5f259f] outline-none transition bg-slate-50/50 focus:bg-white font-mono" />
           <p class="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
             <span>Payload VPA:</span>
@@ -90,7 +193,7 @@
             Fixed Amount (₹) <span class="text-slate-400 font-normal">(Optional)</span>
           </label>
           <input type="number" id="amount" step="0.01" min="1" placeholder="Leave blank for dynamic input"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#5f259f] outline-none transition bg-slate-50/50 focus:bg-white" />
+            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#5f259f] outline-none transition bg-slate-50/50 focus:bg-white font-semibold text-[#5f259f]" />
         </div>
 
         <!-- Hidden Container for raw QR rendering -->
@@ -134,6 +237,7 @@
   <script>
     let currentMode = 'standee';
 
+    // UI Elements
     const modeStandeeBtn = document.getElementById('modeStandeeBtn');
     const modeGenericBtn = document.getElementById('modeGenericBtn');
     const merchantNameInput = document.getElementById('merchantName');
@@ -142,6 +246,24 @@
     const amountInput = document.getElementById('amount');
     const vpaPreview = document.getElementById('vpaPreview');
     
+    // Drawer Elements
+    const openDrawerBtn = document.getElementById('openDrawerBtn');
+    const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+    const sideDrawer = document.getElementById('sideDrawer');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const drawerHomeLink = document.getElementById('drawerHomeLink');
+
+    // Calculator Modal Elements
+    const openCalcModalBtn = document.getElementById('openCalcModalBtn');
+    const closeCalcModalBtn = document.getElementById('closeCalcModalBtn');
+    const calcModalOverlay = document.getElementById('calcModalOverlay');
+    const ratePerKg = document.getElementById('ratePerKg');
+    const purchaseQty = document.getElementById('purchaseQty');
+    const purchaseUnit = document.getElementById('purchaseUnit');
+    const billResult = document.getElementById('billResult');
+    const applyCalcToAmountBtn = document.getElementById('applyCalcToAmountBtn');
+
+    // Canvas & Render Elements
     const renderBtn = document.getElementById('renderBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const rawQrWrapper = document.getElementById('rawQrWrapper');
@@ -150,6 +272,84 @@
 
     const SCALE = 2;
 
+    // --- Drawer Toggle Handlers ---
+    function openDrawer() {
+      drawerOverlay.classList.remove('hidden');
+      setTimeout(() => {
+        drawerOverlay.classList.remove('opacity-0');
+        sideDrawer.classList.remove('-translate-x-full');
+      }, 10);
+    }
+
+    function closeDrawer() {
+      drawerOverlay.classList.add('opacity-0');
+      sideDrawer.classList.add('-translate-x-full');
+      setTimeout(() => {
+        drawerOverlay.classList.add('hidden');
+      }, 300);
+    }
+
+    openDrawerBtn.addEventListener('click', openDrawer);
+    closeDrawerBtn.addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+    drawerHomeLink.addEventListener('click', closeDrawer);
+
+    // --- Calculator Modal Handlers ---
+    function openCalcModal() {
+      closeDrawer();
+      calcModalOverlay.classList.remove('hidden');
+    }
+
+    function closeCalcModal() {
+      calcModalOverlay.classList.add('hidden');
+    }
+
+    openCalcModalBtn.addEventListener('click', openCalcModal);
+    closeCalcModalBtn.addEventListener('click', closeCalcModal);
+
+    // Close calculator modal on clicking dark backdrop
+    calcModalOverlay.addEventListener('click', (e) => {
+      if (e.target === calcModalOverlay) {
+        closeCalcModal();
+      }
+    });
+
+    // --- Weight Bill Calculator Logic ---
+    function calculateBillAmount() {
+      const rate = parseFloat(ratePerKg.value) || 0;
+      const qty = parseFloat(purchaseQty.value) || 0;
+      const unit = purchaseUnit.value;
+
+      let totalBill = 0;
+
+      if (rate > 0 && qty > 0) {
+        if (unit === 'g' || unit === 'ml') {
+          totalBill = (rate / 1000) * qty; // e.g., (140 / 1000) * 750 = 105
+        } else if (unit === 'kg' || unit === 'l') {
+          totalBill = rate * qty;
+        }
+        billResult.textContent = `₹ ${totalBill.toFixed(2)}`;
+        return totalBill;
+      } else {
+        billResult.textContent = `₹ 0.00`;
+        return 0;
+      }
+    }
+
+    ratePerKg.addEventListener('input', calculateBillAmount);
+    purchaseQty.addEventListener('input', calculateBillAmount);
+    purchaseUnit.addEventListener('change', calculateBillAmount);
+
+    applyCalcToAmountBtn.addEventListener('click', () => {
+      const calculatedTotal = calculateBillAmount();
+      if (calculatedTotal > 0) {
+        amountInput.value = calculatedTotal.toFixed(2);
+        drawStandee();
+        closeCalcModal();
+      }
+    });
+
+    // --- Mode Switcher ---
     modeStandeeBtn.addEventListener('click', () => setMode('standee'));
     modeGenericBtn.addEventListener('click', () => setMode('generic'));
 
@@ -160,7 +360,7 @@
         modeStandeeBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 bg-[#5f259f] text-white shadow-sm";
         modeGenericBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900";
         upiFieldLabel.innerHTML = 'Terminal Digits (9 Digits) <span class="text-red-500">*</span>';
-        upiInput.placeholder = "e.g. 9133359954@AXL";
+        upiInput.placeholder = "e.g. 9133359954";
         upiInput.setAttribute('maxlength', '9');
       } else {
         modeGenericBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 bg-[#5f259f] text-white shadow-sm";
@@ -256,7 +456,7 @@
 
       const qrSourceCanvas = await generateQrCode(upiUri);
 
-      // Reset Context & Clear Background
+      // Clear Canvas Background
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -269,7 +469,7 @@
         ctx.arc(200 * SCALE, 48 * SCALE, 26 * SCALE, 0, 2 * Math.PI);
         ctx.fill();
 
-        // White "SM" character inside canvas header logo
+        // White "SM" logo text inside circle
         ctx.fillStyle = "#ffffff";
         ctx.font = `800 ${22 * SCALE}px 'Inter', sans-serif`;
         ctx.textAlign = "center";
