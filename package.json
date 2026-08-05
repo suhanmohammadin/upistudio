@@ -1,0 +1,10 @@
+{
+  "name": "upistudio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Placeholder package.json to enable CI steps",
+  "scripts": {
+    "build": "echo \"No build configured\""
+  },
+  "license": "UNLICENSED"
+}
